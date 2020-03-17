@@ -1,5 +1,6 @@
 package com.forum.forum.controller;
 
+import com.forum.forum.controller.dto.DetailsOfTopicDto;
 import com.forum.forum.controller.dto.TopicDto;
 import com.forum.forum.controller.form.TopicForm;
 import com.forum.forum.model.Topic;
@@ -47,8 +48,8 @@ public class TopicsController {
     }
 
     @GetMapping("/{id}")
-    public TopicDto detail(@PathVariable Long id) {
+    public DetailsOfTopicDto detail(@PathVariable Long id) {
         Topic topic = topicRepository.getOne(id);
-        return new TopicDto((topic));
+        return new DetailsOfTopicDto((topic));
     }
 }
