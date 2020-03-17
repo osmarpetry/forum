@@ -1,13 +1,18 @@
 package com.forum.forum.model;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
 public class Answer {
 
+	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private String mensage;
+	private String message;
+	@ManyToOne
 	private Topic topic;
 	private LocalDateTime creationDate = LocalDateTime.now();
+	@ManyToOne
 	private User author;
 	private Boolean solution = false;
 
@@ -44,12 +49,12 @@ public class Answer {
 		this.id = id;
 	}
 
-	public String getMensage() {
-		return mensage;
+	public String getMessage() {
+		return message;
 	}
 
-	public void setMensage(String mensage) {
-		this.mensage = mensage;
+	public void setMessage(String message) {
+		this.message = message;
 	}
 
 	public Topic getTopic() {
