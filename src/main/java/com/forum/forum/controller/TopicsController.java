@@ -3,6 +3,7 @@ package com.forum.forum.controller;
 import com.forum.forum.controller.dto.DetailsOfTopicDto;
 import com.forum.forum.controller.dto.TopicDto;
 import com.forum.forum.controller.form.TopicForm;
+import com.forum.forum.controller.form.UpdateTopicForm;
 import com.forum.forum.model.Topic;
 import com.forum.forum.repository.CourseRepository;
 import com.forum.forum.repository.TopicRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -51,5 +53,12 @@ public class TopicsController {
     public DetailsOfTopicDto detail(@PathVariable Long id) {
         Topic topic = topicRepository.getOne(id);
         return new DetailsOfTopicDto((topic));
+    }
+
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<TopicDto> update(@PathVariable Long id, @RequestBody @Valid UpdateTopicForm form) {
+        Topic topic = form.update(id, topicRepository);
+        return ResponseEntity.ok(new TopicDto(topic));
     }
 }
