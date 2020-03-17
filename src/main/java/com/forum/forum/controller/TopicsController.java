@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class TopicsController {
     }
 
     @PostMapping
-    public ResponseEntity<TopicDto> register(@RequestBody TopicForm form, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<TopicDto> register(@RequestBody @Valid TopicForm form, UriComponentsBuilder uriBuilder) {
         Topic topic = form.convert(courseRepository);
         topicRepository.save(topic);
 
