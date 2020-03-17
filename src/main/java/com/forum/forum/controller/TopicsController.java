@@ -45,4 +45,10 @@ public class TopicsController {
         URI uri = uriBuilder.path("/topics/{id}").buildAndExpand(topic.getId()).toUri();
         return ResponseEntity.created(uri).body(new TopicDto(topic));
     }
+
+    @GetMapping("/{id}")
+    public TopicDto detail(@PathVariable Long id) {
+        Topic topic = topicRepository.getOne(id);
+        return new TopicDto((topic));
+    }
 }
