@@ -8,6 +8,9 @@ import com.forum.forum.model.Topic;
 import com.forum.forum.repository.CourseRepository;
 import com.forum.forum.repository.TopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -15,7 +18,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -29,13 +31,15 @@ public class TopicsController {
     private CourseRepository courseRepository;
 
     @GetMapping
-    @ResponseBody
-    public List<TopicDto> list(String courseName) {
+    public Page<TopicDto> list(@RequestParam(required = false) String courseName, @RequestParam int page, int qtd) {
+
+        Pageable pageable = PageRequest.of(page, qtd);
+
         if(courseName == null) {
-            List<Topic> topics = topicRepository.findAll();
+            Page<Topic> topics = topicRepository.findAll(pageable);
             return TopicDto.convert(topics);
         } else {
-            List<Topic> topics = topicRepository.findByCourseName(courseName);
+            Page<Topic> topics = topicRepository.findByCourseName(courseName, pageable);
             return TopicDto.convert(topics);
         }
     }
