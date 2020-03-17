@@ -1,5 +1,6 @@
 package com.forum.forum.controller;
 
+import com.forum.forum.controller.dto.TopicDto;
 import com.forum.forum.model.Course;
 import com.forum.forum.model.Topic;
 import org.springframework.stereotype.Controller;
@@ -14,9 +15,9 @@ public class TopicsController {
 
     @RequestMapping("/topics")
     @ResponseBody
-    public List<Topic> list() {
+    public List<TopicDto> list() {
         Topic topic = new Topic("Doubt", "Spring Doubt", new Course("Spring", "Programming"));
 
-        return Arrays.asList(topic, topic, topic);
+        return TopicDto.convert(Arrays.asList(topic, topic, topic));
     }
 }
