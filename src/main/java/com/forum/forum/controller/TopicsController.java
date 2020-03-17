@@ -1,23 +1,25 @@
 package com.forum.forum.controller;
 
 import com.forum.forum.controller.dto.TopicDto;
-import com.forum.forum.model.Course;
 import com.forum.forum.model.Topic;
+import com.forum.forum.repository.TopicRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.Arrays;
 import java.util.List;
 
 @Controller
 public class TopicsController {
 
+    @Autowired
+    private TopicRepository topicRepository;
+
     @RequestMapping("/topics")
     @ResponseBody
     public List<TopicDto> list() {
-        Topic topic = new Topic("Doubt", "Spring Doubt", new Course("Spring", "Programming"));
-
-        return TopicDto.convert(Arrays.asList(topic, topic, topic));
+        List<Topic> topics = topicRepository.findAll();
+        return TopicDto.convert(topics);
     }
 }
