@@ -6,9 +6,12 @@ import com.forum.forum.model.Topic;
 import com.forum.forum.repository.CourseRepository;
 import com.forum.forum.repository.TopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -34,8 +37,11 @@ public class TopicsController {
     }
 
     @PostMapping
-    public void register(@RequestBody TopicForm form) {
+    public ResponseEntity<TopicDto> register(@RequestBody TopicForm form, UriComponentsBuilder uriBuilder) {
         Topic topic = form.convert(courseRepository);
         topicRepository.save(topic);
+
+        URI uri = uriBuilder.path("/topics/{id}").buildAndExpand(topic.getId()).toUri();
+        return ResponseEntity.created(uri).body(new TopicDto(topic));
     }
 }
