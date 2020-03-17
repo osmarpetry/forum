@@ -9,8 +9,6 @@ import com.forum.forum.repository.CourseRepository;
 import com.forum.forum.repository.TopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -18,6 +16,7 @@ import javax.transaction.Transactional;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/topics")
@@ -52,22 +51,33 @@ public class TopicsController {
     }
 
     @GetMapping("/{id}")
-    public DetailsOfTopicDto detail(@PathVariable Long id) {
-        Topic topic = topicRepository.getOne(id);
-        return new DetailsOfTopicDto((topic));
+    public ResponseEntity<DetailsOfTopicDto> detail(@PathVariable Long id) {
+        Optional<Topic> topic = topicRepository.findById(id);
+        if(topic.isPresent()) {
+            return ResponseEntity.ok(new DetailsOfTopicDto(topic.get()));
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PutMapping("/{id}")
     @Transactional
     public ResponseEntity<TopicDto> update(@PathVariable Long id, @RequestBody @Valid UpdateTopicForm form) {
-        Topic topic = form.update(id, topicRepository);
-        return ResponseEntity.ok(new TopicDto(topic));
+        Optional<Topic> optional = topicRepository.findById(id);
+        if(optional.isPresent()) {
+            Topic topic = form.update(id, topicRepository);
+            return ResponseEntity.ok(new TopicDto(topic));
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{id}")
     @Transactional
     public ResponseEntity<TopicDto> remove(@PathVariable Long id) {
-        topicRepository.deleteById(id);
-        return ResponseEntity.ok().build();
+        Optional<Topic> optional = topicRepository.findById(id);
+        if(optional.isPresent()) {
+            topicRepository.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
     }
 }
