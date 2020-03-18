@@ -8,6 +8,7 @@ import com.forum.forum.model.Topic;
 import com.forum.forum.repository.CourseRepository;
 import com.forum.forum.repository.TopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +34,7 @@ public class TopicsController {
     private CourseRepository courseRepository;
 
     @GetMapping
+    @Cacheable(value = "topicsList")
     public Page<TopicDto> list(
             @RequestParam(required = false) String courseName,
             @PageableDefault(sort = "id", direction = Sort.Direction.ASC, page = 0, size = 10) Pageable pageable) {
