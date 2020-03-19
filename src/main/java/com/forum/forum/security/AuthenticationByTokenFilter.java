@@ -1,5 +1,9 @@
 package com.forum.forum.security;
 
+import com.forum.forum.model.User;
+import com.forum.forum.repository.UserRepository;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -11,9 +15,11 @@ import java.io.IOException;
 public class AuthenticationByTokenFilter extends OncePerRequestFilter {
 
     private TokenService tokenService;
+    private UserRepository userRepository;
 
-    public AuthenticationByTokenFilter(TokenService tokenService) {
+    public AuthenticationByTokenFilter(TokenService tokenService, UserRepository userRepository) {
         this.tokenService = tokenService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -22,8 +28,19 @@ public class AuthenticationByTokenFilter extends OncePerRequestFilter {
         Boolean valid = tokenService.isTokenValid(token);
 
         System.out.println(valid + " " +token);
+        if(valid) {
+            authenticateClient(token);
+        }
+
 
         filterChain.doFilter(httpServletRequest, httpServletResponse);
+    }
+
+    private void authenticateClient(String token) {
+        Long userId = tokenService.getUserId(token);
+        User user = userRepository.findById(userId).get();
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private String recoverToken(HttpServletRequest request) {
