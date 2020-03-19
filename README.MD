@@ -10,6 +10,11 @@ To start the project, run the following command:
 Just try this link:
 
 ```https://www.getpostman.com/collections/34173361d597c7558426```
+
+## How to access the Swagger
+Just try this link, after started the project:
+
+```http://localhost:8080/swagger-ui.html#/topics-controller```
  
  
  ### About security with Spring Boot actuator and Spring Boot admin 
