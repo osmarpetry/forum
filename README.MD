@@ -11,3 +11,6 @@ Just try this link:
 
 ```https://www.getpostman.com/collections/34173361d597c7558426```
  
+ 
+ ### About security with Spring Boot actuator and Spring Boot admin 
+ In the file ```src/main/java/com/forum/forum/security/SecurityConfigurations.java``` I'm allowing everyone to access actuator, this is wrong. And the Spring boot admin (in the other repo.) is public, like the actuator configuration here.
