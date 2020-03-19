@@ -9,11 +9,19 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class AuthenticationByTokenFilter extends OncePerRequestFilter {
+
+    private TokenService tokenService;
+
+    public AuthenticationByTokenFilter(TokenService tokenService) {
+        this.tokenService = tokenService;
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
         String token = recoverToken(httpServletRequest);
+        Boolean valid = tokenService.isTokenValid(token);
 
-        System.out.println(token);
+        System.out.println(valid + " " +token);
 
         filterChain.doFilter(httpServletRequest, httpServletResponse);
     }
