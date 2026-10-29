@@ -35,6 +35,11 @@ class ForumApplicationTests {
 	}
 
 	@Test
+	void servesSwaggerUi() {
+		assertEquals(HttpStatus.OK, rest.getForEntity("/swagger-ui.html", String.class).getStatusCode());
+	}
+
+	@Test
 	void listsTopics() {
 		assertEquals(HttpStatus.OK, rest.getForEntity("/topics", String.class).getStatusCode());
 	}
