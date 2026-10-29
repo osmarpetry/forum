@@ -1,0 +1,17 @@
+# Sobe forum (8080) + spring-boot-admin (8081).
+# Requer os 2 repos lado a lado: ./forum e ./forum-springbootadmin
+services:
+  admin:
+    build: ../forum-springbootadmin
+    ports:
+      - "8081:8081"
+
+  forum:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://admin:8081
+      SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_BASE_URL: http://forum:8080
+    depends_on:
+      - admin
