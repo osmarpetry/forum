@@ -14,7 +14,7 @@ services:
       - admin
 
   admin:
-    build: https://github.com/osmarpetry/forum-springbootadmin.git#main
+    build: https://github.com/osmarpetry/forum-springbootadmin.git#master
     restart: unless-stopped
     ports:
       - "8081:8081"
