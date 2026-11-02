@@ -1,0 +1,31 @@
+# Forum API + Spring Boot Admin + Cloudflare Tunnel.
+# Usage: cp .env.example .env  (fill it)  ->  docker compose up -d --build
+services:
+  forum:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      FORUM_JWT_SECRET: ${FORUM_JWT_SECRET}
+      SPRING_BOOT_ADMIN_CLIENT_URL: http://admin:8081
+      SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_BASE_URL: http://forum:8080
+    depends_on:
+      - admin
+
+  admin:
+    build: https://github.com/osmarpetry/forum-springbootadmin.git#master
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+
+  # Only starts with: docker compose --profile tunnel up -d
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
+    profiles: ["tunnel"]
+    depends_on:
+      - forum
