@@ -1,39 +1,22 @@
 package com.forum.forum.config.swagger;
 
-import com.forum.forum.model.User;
+import io.swagger.v3.oas.models.Components;
+import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import springfox.documentation.builders.ParameterBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.schema.ModelRef;
-import springfox.documentation.spi.DocumentationType;
-import springfox.documentation.spring.web.plugins.Docket;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
-import java.util.Arrays;
-
-@EnableSwagger2
 @Configuration
 public class SwaggerConfigurations {
 
+    // Swagger UI: /swagger-ui.html — "Authorize" button sends the JWT token
     @Bean
-    public Docket forumApi() {
-        return new Docket(DocumentationType.SWAGGER_2)
-                .select()
-                .apis(RequestHandlerSelectors.basePackage("com.forum.forum"))
-                .paths(PathSelectors.ant("/**"))
-                .build()
-                .ignoredParameterTypes(User.class)
-                .globalOperationParameters(
-                        Arrays.asList(
-                                new ParameterBuilder()
-                                        .name("Authorization")
-                                        .description("Header para Token JWT")
-                                        .modelRef(new ModelRef("string"))
-                                        .parameterType("header")
-                                        .required(false)
-                                        .build()));
+    public OpenAPI forumApi() {
+        return new OpenAPI()
+                .components(new Components().addSecuritySchemes("bearer-jwt",
+                        new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")))
+                .addSecurityItem(new SecurityRequirement().addList("bearer-jwt"));
     }
 
 }
