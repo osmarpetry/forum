@@ -33,5 +33,26 @@ Just try this link, after started the project:
 ```http://localhost:8080/swagger-ui.html```
  
  
- ### About security with Spring Boot actuator and Spring Boot admin 
- In the file ```src/main/java/com/forum/forum/security/SecurityConfigurations.java``` I'm allowing everyone to access actuator, this is wrong. And the Spring boot admin (in the other repo.) is public, like the actuator configuration here.
+### About security with Spring Boot actuator and Spring Boot admin
+In Docker (profile `prod`) the actuator runs on port 8082. Compose does not publish this port, so only the admin container can reach it. Port 8080 does not serve `/actuator` or `/h2-console`. Without Docker (default profile) the actuator is on 8080 and open to everyone: use that only on your machine.
+
+## Run with Docker (daily use, Mac and Synology)
+The forum and the admin run from 1 `docker-compose.yml`. The admin is built from the forum-springbootadmin repo at a pinned commit.
+
+```bash
+cp .env.example .env   # then set FORUM_JWT_SECRET=$(openssl rand -base64 48)
+./deploy.sh            # git pull, build, start, check: /topics, /auth, Swagger, admin shows forum UP
+./deploy.sh --tunnel   # the same, plus the Cloudflare Tunnel (set CLOUDFLARE_TUNNEL_TOKEN in .env)
+```
+
+- Forum: http://localhost:8080. Admin: http://localhost:8081.
+- Stop: `docker compose down`. Logs: `docker compose logs -f forum`.
+- Data: the H2 database files are in `./data`. Back up this folder. The container runs as root, so on Synology the files belong to root: a normal DSM user cannot delete them.
+
+## Build without Docker
+Java comes from asdf (`.tool-versions`): `asdf plugin add java && asdf install`.
+
+```bash
+./mvnw package           # build and test
+./mvnw spring-boot:run   # default profile: in-memory database, data is lost at stop
+```

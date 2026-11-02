@@ -31,3 +31,6 @@ build/
 .vscode/
 
 .env
+
+# H2 database files (Docker volume)
+data/

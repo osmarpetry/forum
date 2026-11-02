@@ -7,21 +7,26 @@ services:
     ports:
       - "8080:8080"
     environment:
-      FORUM_JWT_SECRET: ${FORUM_JWT_SECRET}
+      FORUM_JWT_SECRET: ${FORUM_JWT_SECRET:?set FORUM_JWT_SECRET in .env}
+      SPRING_PROFILES_ACTIVE: prod
       SPRING_BOOT_ADMIN_CLIENT_URL: http://admin:8081
       SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_BASE_URL: http://forum:8080
+    # H2 database files. Keep this folder in your backups.
+    volumes:
+      - ./data:/data
     depends_on:
       - admin
 
   admin:
-    build: https://github.com/osmarpetry/forum-springbootadmin.git#master
+    # Pinned commit (full 40-char SHA). Change it to deploy a new admin version.
+    build: https://github.com/osmarpetry/forum-springbootadmin.git#31f1775e42138cd0ce26e1508c3aaa06ee4827dd
     restart: unless-stopped
     ports:
       - "8081:8081"
 
   # Only starts with: docker compose --profile tunnel up -d
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.10.7
     restart: unless-stopped
     command: tunnel --no-autoupdate run
     environment:
