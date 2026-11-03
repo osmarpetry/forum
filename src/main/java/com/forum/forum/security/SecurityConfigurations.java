@@ -3,6 +3,7 @@ package com.forum.forum.security;
 import com.forum.forum.repository.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -29,7 +30,23 @@ public class SecurityConfigurations {
         return configuration.getAuthenticationManager();
     }
 
-    //Authorization configurations
+    //Web UI: session login, CSRF on. Only "/" and "/ui/**" reach this chain; the JWT chain below keeps all the rest.
+    @Bean
+    @Order(1)
+    public SecurityFilterChain uiSecurityFilterChain(HttpSecurity http) throws Exception {
+        http.securityMatcher("/", "/ui/**")
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/ui/topics/new").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/", "/ui/topics", "/ui/topics/*").permitAll()
+                        .requestMatchers("/ui/login", "/ui/htmx.min.js", "/ui/ui.css").permitAll()
+                        .anyRequest().authenticated())
+                .formLogin(form -> form.loginPage("/ui/login").loginProcessingUrl("/ui/login")
+                        .defaultSuccessUrl("/ui/topics").permitAll())
+                .logout(logout -> logout.logoutUrl("/ui/logout").logoutSuccessUrl("/ui/topics"));
+        return http.build();
+    }
+
+    //Authorization configurations (API, JWT)
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, TokenService tokenService, UserRepository userRepository) throws Exception {
         http.authorizeHttpRequests(auth -> auth
