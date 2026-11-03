@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(title)">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- htmx 2 does not swap 4xx by default: swap 422 (form errors), keep other 4xx/5xx as errors -->
+    <meta name="htmx-config" content='{"historyRestoreAsHxRequest":false,"responseHandling":[{"code":"204","swap":false},{"code":"[23]..","swap":true},{"code":"422","swap":true},{"code":"[45]..","swap":false,"error":true},{"code":"...","swap":true}]}'>
+    <title th:text="${title} + ' - Forum'">Forum</title>
+    <link rel="stylesheet" th:href="@{/ui/ui.css}">
+    <script th:src="@{/ui/htmx.min.js}"></script>
+</head>
+<body>
+<nav th:fragment="nav">
+    <a class="brand" th:href="@{/ui/topics}">Forum</a>
+    <a th:href="@{/ui/topics}">Topics</a>
+    <span class="spacer"></span>
+    <a sec:authorize="!isAuthenticated()" th:href="@{/ui/login}">Login</a>
+    <form sec:authorize="isAuthenticated()" th:action="@{/ui/logout}" method="post">
+        <span class="muted" sec:authentication="name">user</span>
+        <button type="submit" class="secondary">Logout</button>
+    </form>
+</nav>
+</body>
+</html>

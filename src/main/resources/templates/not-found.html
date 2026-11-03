@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Not found')}"></head>
+<body th:attr="hx-headers=${'{&quot;X-CSRF-TOKEN&quot;: &quot;' + _csrf.token + '&quot;}'}">
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <h1>Topic not found</h1>
+    <p><a th:href="@{/ui/topics}">&larr; All topics</a></p>
+</main>
+</body>
+</html>

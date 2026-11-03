@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{layout :: head(${topic.title})}"></head>
+<body th:attr="hx-headers=${'{&quot;X-CSRF-TOKEN&quot;: &quot;' + _csrf.token + '&quot;}'}">
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <p><a th:href="@{/ui/topics}">&larr; All topics</a></p>
+    <div id="detail" th:fragment="detail" class="card">
+        <h1 th:text="${topic.title}">Title</h1>
+        <p class="muted">
+            <span th:text="${topic.course?.name}">Course</span> &middot;
+            <span th:text="${topic.author?.name}">Author</span> &middot;
+            <span th:text="${#temporals.format(topic.creationDate, 'yyyy-MM-dd HH:mm')}">Date</span> &middot;
+            <span th:text="${topic.status}">Status</span>
+        </p>
+        <p th:text="${topic.message}">Message</p>
+        <h2>Answers</h2>
+        <p th:if="${#lists.isEmpty(topic.answers)}" class="muted">No answers yet.</p>
+        <div th:each="a : ${topic.answers}" class="card">
+            <p th:text="${a.message}">Answer</p>
+            <p class="muted">
+                <span th:text="${a.author?.name}">Author</span> &middot;
+                <span th:text="${#temporals.format(a.creationDate, 'yyyy-MM-dd HH:mm')}">Date</span>
+                <strong th:if="${a.solution}"> &middot; Solution</strong>
+            </p>
+        </div>
+    </div>
+</main>
+</body>
+</html>
