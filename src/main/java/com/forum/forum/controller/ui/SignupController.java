@@ -6,6 +6,7 @@ import com.forum.forum.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,7 +37,10 @@ public class SignupController {
     @PostMapping("/ui/signup")
     public String signup(@Valid @ModelAttribute("signupForm") SignupForm form, BindingResult errors,
                          HttpServletResponse response) {
-        if (!errors.hasFieldErrors("email") && userRepository.findByEmail(form.getEmail()).isPresent()) {
+        if (form.getEmail() != null) {
+            form.setEmail(form.getEmail().trim().toLowerCase(Locale.ROOT));
+        }
+        if (!errors.hasFieldErrors("email") && userRepository.existsByEmailIgnoreCase(form.getEmail())) {
             errors.rejectValue("email", "email.taken", "Email is already registered");
         }
         if (!errors.hasFieldErrors("password")

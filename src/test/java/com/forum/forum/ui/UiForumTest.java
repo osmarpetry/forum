@@ -202,6 +202,14 @@ class UiForumTest {
     }
 
     @Test
+    void signUpWithAnExistingEmailInOtherCaseGives422() throws Exception {
+        mvc.perform(post("/ui/signup").with(csrf())
+                        .param("name", "Copy Cat").param("email", "ALUNO@email.com").param("password", "secret1"))
+                .andExpect(status().is(422))
+                .andExpect(content().string(containsString("Email is already registered")));
+    }
+
+    @Test
     void signUpWithBadDataGives422() throws Exception {
         mvc.perform(post("/ui/signup").with(csrf())
                         .param("name", "").param("email", "not-an-email").param("password", "123"))
