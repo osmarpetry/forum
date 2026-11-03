@@ -1,5 +1,9 @@
 package com.forum.forum.ui;
 
+import com.forum.forum.model.Topic;
+import com.forum.forum.repository.CourseRepository;
+import com.forum.forum.repository.TopicRepository;
+import com.forum.forum.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,6 +24,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class UiAttackTest {
     @Autowired MockMvc mvc;
+    @Autowired TopicRepository topics;
+    @Autowired CourseRepository courses;
+    @Autowired UserRepository users;
+
+    private String newTopicId() {
+        Topic topic = new Topic("Attack topic", "valid long message", courses.findAll().get(0));
+        topic.setAuthor(users.findByEmail("aluno@email.com").orElseThrow());
+        return String.valueOf(topics.save(topic).getId());
+    }
 
     private String createTopicAsCurrentUser() throws Exception {
         String redirect = mvc.perform(post("/ui/topics").with(csrf())
@@ -38,24 +51,27 @@ class UiAttackTest {
         mvc.perform(post("/topics").session(session).contentType(MediaType.APPLICATION_JSON)
                 .content("{\"title\":\"Session attack\",\"message\":\"valid long message\",\"courseName\":\"Spring Boot\"}"))
                 .andExpect(status().isForbidden());
-        mvc.perform(delete("/topics/1").session(session)).andExpect(status().isForbidden());
+        String id = newTopicId();
+        mvc.perform(delete("/topics/" + id).session(session)).andExpect(status().isForbidden());
     }
 
     @Test
     void anonymousWritesGoToLogin() throws Exception {
-        mvc.perform(delete("/ui/topics/2").with(csrf())).andExpect(status().isFound()).andExpect(redirectedUrl("/ui/login"));
-        mvc.perform(put("/ui/topics/2").with(csrf()).param("title","Valid title").param("message","valid long message"))
+        String id = newTopicId();
+        mvc.perform(delete("/ui/topics/" + id).with(csrf())).andExpect(status().isFound()).andExpect(redirectedUrl("/ui/login"));
+        mvc.perform(put("/ui/topics/" + id).with(csrf()).param("title","Valid title").param("message","valid long message"))
                 .andExpect(status().isFound());
-        mvc.perform(get("/ui/topics/2/edit")).andExpect(status().isFound());
-        mvc.perform(get("/topics/2")).andExpect(status().isOk());
+        mvc.perform(get("/ui/topics/" + id + "/edit")).andExpect(status().isFound());
+        mvc.perform(get("/topics/" + id)).andExpect(status().isOk());
     }
 
     @Test
     @WithUserDetails("aluno@email.com")
     void putAndDeleteNeedCsrf() throws Exception {
-        mvc.perform(put("/ui/topics/2").param("title","Valid title").param("message","valid long message"))
+        String id = newTopicId();
+        mvc.perform(put("/ui/topics/" + id).param("title","Valid title").param("message","valid long message"))
                 .andExpect(status().isForbidden());
-        mvc.perform(delete("/ui/topics/2")).andExpect(status().isForbidden());
+        mvc.perform(delete("/ui/topics/" + id)).andExpect(status().isForbidden());
         mvc.perform(post("/ui/logout")).andExpect(status().isForbidden());
     }
 

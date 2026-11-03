@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -72,18 +74,20 @@ class UiForumTest {
     void deleteTopicWithRepliesThroughUi() throws Exception {
         User author = newUser();
         Topic topic = newTopic(author);
-        newAnswer(topic, author, "a reply that must go with the topic");
+        Long answerId = newAnswer(topic, author, "a reply that must go with the topic").getId();
 
         mvc.perform(delete("/ui/topics/" + topic.getId()).with(csrf()).with(user(author)))
                 .andExpect(status().isOk())
                 .andExpect(header().string("HX-Redirect", "/ui/topics"));
+
+        assertTrue(answers.findById(answerId).isEmpty());
     }
 
     @Test
     void deleteTopicWithRepliesThroughApi() throws Exception {
         User author = newUser();
         Topic topic = newTopic(author);
-        newAnswer(topic, author, "a reply that must go with the topic");
+        Long answerId = newAnswer(topic, author, "a reply that must go with the topic").getId();
         String body = mvc.perform(post("/auth").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"" + author.getEmail() + "\",\"password\":\"" + PASSWORD + "\"}"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
@@ -91,6 +95,8 @@ class UiForumTest {
 
         mvc.perform(delete("/topics/" + topic.getId()).header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
+
+        assertTrue(answers.findById(answerId).isEmpty());
     }
 
     @Test
@@ -161,6 +167,35 @@ class UiForumTest {
                 .andExpect(status().isForbidden());
 
         assertEquals(TopicStatus.NOT_ANSWERED, topics.findById(topic.getId()).orElseThrow().getStatus());
+        assertFalse(answers.findById(answer.getId()).orElseThrow().getSolution());
+    }
+
+    @Test
+    void markingASecondSolutionClearsTheFirst() throws Exception {
+        User author = newUser();
+        Topic topic = newTopic(author);
+        Answer first = newAnswer(topic, newUser(), "the first good answer");
+        Answer second = newAnswer(topic, newUser(), "the second good answer");
+
+        mvc.perform(post("/ui/answers/" + first.getId() + "/solution").with(csrf()).with(user(author)))
+                .andExpect(status().isOk());
+        mvc.perform(post("/ui/answers/" + second.getId() + "/solution").with(csrf()).with(user(author)))
+                .andExpect(status().isOk());
+
+        assertFalse(answers.findById(first.getId()).orElseThrow().getSolution());
+        assertTrue(answers.findById(second.getId()).orElseThrow().getSolution());
+    }
+
+    @Test
+    void replyIsEscapedInTheHtml() throws Exception {
+        User author = newUser();
+        Topic topic = newTopic(author);
+
+        mvc.perform(post("/ui/topics/" + topic.getId() + "/answers").with(csrf()).with(user(author))
+                        .param("message", "<script>alert(1)</script> long enough"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.not(containsString("<script>alert"))))
+                .andExpect(content().string(containsString("&lt;script&gt;alert")));
     }
 
     @Test
