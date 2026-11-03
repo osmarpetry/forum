@@ -1,9 +1,13 @@
 package com.forum.forum.controller.ui;
 
+import com.forum.forum.controller.form.AnswerForm;
 import com.forum.forum.controller.form.TopicForm;
 import com.forum.forum.controller.form.UpdateTopicForm;
+import com.forum.forum.model.Answer;
 import com.forum.forum.model.Topic;
+import com.forum.forum.model.TopicStatus;
 import com.forum.forum.model.User;
+import com.forum.forum.repository.AnswerRepository;
 import com.forum.forum.repository.CourseRepository;
 import com.forum.forum.repository.TopicRepository;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,13 +37,17 @@ public class UiController {
 
     private static final String HX_REDIRECT = "HX-Redirect";
     private static final String TOPIC_FORM = "topic-form :: form";
+    private static final String ANSWERS = "topic :: answers";
 
     private final TopicRepository topicRepository;
     private final CourseRepository courseRepository;
+    private final AnswerRepository answerRepository;
 
-    public UiController(TopicRepository topicRepository, CourseRepository courseRepository) {
+    public UiController(TopicRepository topicRepository, CourseRepository courseRepository,
+                        AnswerRepository answerRepository) {
         this.topicRepository = topicRepository;
         this.courseRepository = courseRepository;
+        this.answerRepository = answerRepository;
     }
 
     @GetMapping("/")
@@ -64,9 +72,12 @@ public class UiController {
     }
 
     @GetMapping("/ui/topics/{id}")
-    public String detail(@PathVariable Long id, Model model, HttpServletResponse response) {
+    public String detail(@PathVariable Long id, @AuthenticationPrincipal User me, Model model,
+                         HttpServletResponse response) {
         return topicRepository.findById(id).map(topic -> {
             model.addAttribute("topic", topic);
+            model.addAttribute("owner", isOwner(topic, me));
+            model.addAttribute("answerForm", new AnswerForm());
             return "topic";
         }).orElseGet(() -> notFound(response));
     }
@@ -142,6 +153,60 @@ public class UiController {
         return "layout :: empty";
     }
 
+    @PostMapping("/ui/topics/{id}/answers")
+    @Transactional
+    @CacheEvict(value = "topicsList", allEntries = true)
+    public String reply(@PathVariable Long id, @Valid @ModelAttribute("answerForm") AnswerForm form,
+                        BindingResult errors, @AuthenticationPrincipal User me, Model model,
+                        HttpServletResponse response) {
+        Topic topic = topicRepository.findById(id).orElse(null);
+        if (topic == null) {
+            return notFound(response);
+        }
+        model.addAttribute("topic", topic);
+        model.addAttribute("owner", isOwner(topic, me));
+        if (errors.hasErrors()) {
+            response.setStatus(422);
+            return ANSWERS;
+        }
+        Answer answer = answerRepository.save(form.convert(topic, me));
+        topic.getAnswers().add(answer);
+        if (topic.getStatus() == TopicStatus.NOT_ANSWERED) {
+            topic.setStatus(TopicStatus.NOT_RESOLVED);
+        }
+        form.setMessage("");
+        model.addAttribute("oob", true);
+        return ANSWERS;
+    }
+
+    @PostMapping("/ui/answers/{id}/solution")
+    @Transactional
+    @CacheEvict(value = "topicsList", allEntries = true)
+    public String markSolution(@PathVariable Long id, @AuthenticationPrincipal User me, Model model,
+                               HttpServletResponse response) {
+        Answer answer = answerRepository.findById(id).orElse(null);
+        if (answer == null) {
+            return notFound(response);
+        }
+        Topic topic = answer.getTopic();
+        if (!isOwner(topic, me)) {
+            return forbidden(response);
+        }
+        topic.getAnswers().forEach(a -> a.setSolution(a.getId().equals(id)));
+        topic.setStatus(TopicStatus.RESOLVED);
+        model.addAttribute("topic", topic);
+        model.addAttribute("owner", true);
+        model.addAttribute("answerForm", new AnswerForm());
+        model.addAttribute("oob", true);
+        return ANSWERS;
+    }
+
+    // Compare by id: the logged-in user is a detached copy, and the author can be a Hibernate proxy.
+    // A topic made through the JSON API can have no author: then nobody owns it.
+    private boolean isOwner(Topic topic, User me) {
+        return me != null && topic.getAuthor() != null && topic.getAuthor().getId().equals(me.getId());
+    }
+
     private void fillNewForm(Model model) {
         model.addAttribute("isNew", true);
         model.addAttribute("courses", courseRepository.findAll());
@@ -150,6 +215,11 @@ public class UiController {
     private void fillEditForm(Model model, Long id) {
         model.addAttribute("isNew", false);
         model.addAttribute("topicId", id);
+    }
+
+    private String forbidden(HttpServletResponse response) {
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        return "forbidden";
     }
 
     private String notFound(HttpServletResponse response) {

@@ -11,7 +11,7 @@
             <span th:text="${topic.course?.name}">Course</span> &middot;
             <span th:text="${topic.author?.name}">Author</span> &middot;
             <span th:text="${#temporals.format(topic.creationDate, 'yyyy-MM-dd HH:mm')}">Date</span> &middot;
-            <span th:text="${topic.status}">Status</span>
+            <span id="topic-status" th:text="${topic.status}">Status</span>
         </p>
         <p th:text="${topic.message}">Message</p>
         <div class="actions" sec:authorize="isAuthenticated()">
@@ -20,6 +20,9 @@
             <button type="button" class="danger" th:attr="hx-delete=@{/ui/topics/{id}(id=${topic.id})}"
                     hx-confirm="Delete this topic?" hx-swap="none">Delete</button>
         </div>
+    </div>
+    <section id="answers" th:fragment="answers">
+        <span id="topic-status" hx-swap-oob="true" th:if="${oob}" th:text="${topic.status}">Status</span>
         <h2>Answers</h2>
         <p th:if="${#lists.isEmpty(topic.answers)}" class="muted">No answers yet.</p>
         <div th:each="a : ${topic.answers}" class="card">
@@ -29,8 +32,21 @@
                 <span th:text="${#temporals.format(a.creationDate, 'yyyy-MM-dd HH:mm')}">Date</span>
                 <strong th:if="${a.solution}"> &middot; Solution</strong>
             </p>
+            <button type="button" class="secondary" th:if="${owner and !a.solution}"
+                    th:attr="hx-post=@{/ui/answers/{id}/solution(id=${a.id})}"
+                    hx-target="#answers" hx-swap="outerHTML">Mark as solution</button>
         </div>
-    </div>
+        <form class="card" sec:authorize="isAuthenticated()" method="post" th:object="${answerForm}"
+              th:action="@{/ui/topics/{id}/answers(id=${topic.id})}"
+              th:attr="hx-post=@{/ui/topics/{id}/answers(id=${topic.id})}"
+              hx-target="#answers" hx-swap="outerHTML">
+            <label for="answer-message">Your answer</label>
+            <textarea id="answer-message" rows="4" th:field="*{message}"></textarea>
+            <div class="error" th:if="${#fields.hasErrors('message')}" th:errors="*{message}">error</div>
+            <div class="actions"><button type="submit">Reply</button></div>
+        </form>
+        <p class="muted" sec:authorize="!isAuthenticated()"><a th:href="@{/ui/login}">Log in</a> to reply.</p>
+    </section>
 </main>
 </body>
 </html>
