@@ -38,7 +38,7 @@ public class SecurityConfigurations {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/ui/topics/new").authenticated()
                         .requestMatchers(HttpMethod.GET, "/", "/ui/topics", "/ui/topics/*").permitAll()
-                        .requestMatchers("/ui/login", "/ui/htmx.min.js", "/ui/ui.css").permitAll()
+                        .requestMatchers("/ui/login", "/ui/signup", "/ui/htmx.min.js", "/ui/ui.css").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form.loginPage("/ui/login").loginProcessingUrl("/ui/login")
                         .defaultSuccessUrl("/ui/topics").permitAll())

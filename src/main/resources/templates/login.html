@@ -6,6 +6,7 @@
 <main>
     <h1>Login</h1>
     <p class="error" th:if="${param.error}">Invalid email or password.</p>
+    <p class="success" th:if="${param.registered}">Account created. Log in.</p>
     <form class="card" th:action="@{/ui/login}" method="post">
         <label for="username">Email</label>
         <input id="username" name="username" type="email" required autofocus>
@@ -13,6 +14,7 @@
         <input id="password" name="password" type="password" required>
         <div class="actions"><button type="submit">Login</button></div>
     </form>
+    <p class="muted">No account yet? <a th:href="@{/ui/signup}">Sign up</a></p>
 </main>
 </body>
 </html>

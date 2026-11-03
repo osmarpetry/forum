@@ -14,6 +14,7 @@
     <a class="brand" th:href="@{/ui/topics}">Forum</a>
     <a th:href="@{/ui/topics}">Topics</a>
     <span class="spacer"></span>
+    <a sec:authorize="!isAuthenticated()" th:href="@{/ui/signup}">Sign up</a>
     <a sec:authorize="!isAuthenticated()" th:href="@{/ui/login}">Login</a>
     <form sec:authorize="isAuthenticated()" th:action="@{/ui/logout}" method="post">
         <span class="muted" sec:authentication="name">user</span>

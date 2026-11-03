@@ -23,3 +23,4 @@ button.danger { background: var(--danger); border-color: var(--danger); }
 .card { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 1rem 1.25rem; margin-bottom: 1rem; }
 .actions { display: flex; gap: .5rem; margin-top: 1rem; }
 .htmx-request { opacity: .6; }
+.success { color: #166534; font-size: .9rem; }
