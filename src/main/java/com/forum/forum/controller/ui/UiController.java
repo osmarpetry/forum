@@ -113,24 +113,35 @@ public class UiController {
     }
 
     @GetMapping("/ui/topics/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model, HttpServletResponse response) {
-        return topicRepository.findById(id).map(topic -> {
-            UpdateTopicForm form = new UpdateTopicForm();
-            form.setTitle(topic.getTitle());
-            form.setMessage(topic.getMessage());
-            model.addAttribute("topicForm", form);
-            fillEditForm(model, id);
-            return TOPIC_FORM;
-        }).orElseGet(() -> notFound(response));
+    public String editForm(@PathVariable Long id, @AuthenticationPrincipal User me, Model model,
+                           HttpServletResponse response) {
+        Topic topic = topicRepository.findById(id).orElse(null);
+        if (topic == null) {
+            return notFound(response);
+        }
+        if (!isOwner(topic, me)) {
+            return forbidden(response);
+        }
+        UpdateTopicForm form = new UpdateTopicForm();
+        form.setTitle(topic.getTitle());
+        form.setMessage(topic.getMessage());
+        model.addAttribute("topicForm", form);
+        fillEditForm(model, id);
+        return TOPIC_FORM;
     }
 
     @PutMapping("/ui/topics/{id}")
     @Transactional
     @CacheEvict(value = "topicsList", allEntries = true)
     public String update(@PathVariable Long id, @Valid @ModelAttribute("topicForm") UpdateTopicForm form,
-                         BindingResult errors, Model model, HttpServletResponse response) {
-        if (topicRepository.findById(id).isEmpty()) {
+                         BindingResult errors, @AuthenticationPrincipal User me, Model model,
+                         HttpServletResponse response) {
+        Topic topic = topicRepository.findById(id).orElse(null);
+        if (topic == null) {
             return notFound(response);
+        }
+        if (!isOwner(topic, me)) {
+            return forbidden(response);
         }
         if (errors.hasErrors()) {
             fillEditForm(model, id);
@@ -138,17 +149,22 @@ public class UiController {
             return TOPIC_FORM;
         }
         model.addAttribute("topic", form.update(id, topicRepository));
+        model.addAttribute("owner", true);
         return "topic :: detail";
     }
 
     @DeleteMapping("/ui/topics/{id}")
     @Transactional
     @CacheEvict(value = "topicsList", allEntries = true)
-    public String delete(@PathVariable Long id, HttpServletResponse response) {
-        if (topicRepository.findById(id).isEmpty()) {
+    public String delete(@PathVariable Long id, @AuthenticationPrincipal User me, HttpServletResponse response) {
+        Topic topic = topicRepository.findById(id).orElse(null);
+        if (topic == null) {
             return notFound(response);
         }
-        topicRepository.deleteById(id);
+        if (!isOwner(topic, me)) {
+            return forbidden(response);
+        }
+        topicRepository.delete(topic);
         response.setHeader(HX_REDIRECT, "/ui/topics");
         return "layout :: empty";
     }

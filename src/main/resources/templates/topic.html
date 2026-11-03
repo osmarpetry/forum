@@ -14,7 +14,7 @@
             <span id="topic-status" th:text="${topic.status}">Status</span>
         </p>
         <p th:text="${topic.message}">Message</p>
-        <div class="actions" sec:authorize="isAuthenticated()">
+        <div class="actions" th:if="${owner}">
             <button type="button" class="secondary" th:attr="hx-get=@{/ui/topics/{id}/edit(id=${topic.id})}"
                     hx-target="#detail" hx-swap="outerHTML">Edit</button>
             <button type="button" class="danger" th:attr="hx-delete=@{/ui/topics/{id}(id=${topic.id})}"
