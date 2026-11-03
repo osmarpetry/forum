@@ -40,6 +40,12 @@ curl -s -X POST "$FORUM/auth" -H 'Content-Type: application/json' \
   || fail "POST /auth gave no token"
 echo "ok   POST /auth token"
 
+[ "$(curl -s -o /dev/null -w '%{http_code}' "$FORUM/ui/topics")" = 200 ] || fail "GET /ui/topics is not 200"
+echo "ok   GET /ui/topics 200"
+
+[ "$(curl -s -o /dev/null -w '%{http_code}' "$FORUM/ui/signup")" = 200 ] || fail "GET /ui/signup is not 200"
+echo "ok   GET /ui/signup 200"
+
 [ "$(curl -s -o /dev/null -L -w '%{http_code}' "$FORUM/swagger-ui.html")" = 200 ] || fail "swagger-ui.html is not 200"
 echo "ok   swagger-ui.html 200"
 

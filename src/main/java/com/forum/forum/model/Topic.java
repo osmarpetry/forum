@@ -19,7 +19,7 @@ public class Topic {
 	private User author;
 	@ManyToOne
 	private Course course;
-	@OneToMany(mappedBy = "topic")
+	@OneToMany(mappedBy = "topic", cascade = CascadeType.REMOVE)
 	private List<Answer> answers = new ArrayList<>();
 
 	public Topic() {

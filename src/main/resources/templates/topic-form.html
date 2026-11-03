@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<form th:fragment="form" id="topic-form" class="card" method="post" th:object="${topicForm}"
+      th:action="${isNew} ? @{/ui/topics} : @{/ui/topics/{id}(id=${topicId})}"
+      th:attr="hx-post=${isNew} ? @{/ui/topics}, hx-put=${isNew} ? null : @{/ui/topics/{id}(id=${topicId})}"
+      hx-target="this" hx-swap="outerHTML">
+    <h2 th:text="${isNew} ? 'New topic' : 'Edit topic'">Topic</h2>
+    <label for="title">Title</label>
+    <input id="title" th:field="*{title}">
+    <div class="error" th:if="${#fields.hasErrors('title')}" th:errors="*{title}">error</div>
+    <label for="message">Message</label>
+    <textarea id="message" rows="5" th:field="*{message}"></textarea>
+    <div class="error" th:if="${#fields.hasErrors('message')}" th:errors="*{message}">error</div>
+    <th:block th:if="${isNew}">
+        <label for="courseName">Course</label>
+        <select id="courseName" th:field="*{courseName}">
+            <option th:each="c : ${courses}" th:value="${c.name}" th:text="${c.name}">Course</option>
+        </select>
+    </th:block>
+    <div class="actions">
+        <button type="submit">Save</button>
+        <a class="button secondary" th:href="${isNew} ? @{/ui/topics} : @{/ui/topics/{id}(id=${topicId})}">Cancel</a>
+    </div>
+</form>
+</body>
+</html>

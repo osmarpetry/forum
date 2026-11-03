@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{layout :: head('Topics')}"></head>
+<body th:attr="hx-headers=${'{&quot;X-CSRF-TOKEN&quot;: &quot;' + _csrf.token + '&quot;}'}">
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <h1>Topics</h1>
+    <div class="toolbar">
+        <input type="search" name="courseName" th:value="${courseName}" placeholder="Filter by course name"
+               aria-label="Filter by course name"
+               th:attr="hx-get=@{/ui/topics}" hx-trigger="input changed delay:300ms"
+               hx-target="#topics" hx-swap="outerHTML" hx-push-url="true">
+        <span class="spacer"></span>
+        <a class="button" sec:authorize="isAuthenticated()" th:href="@{/ui/topics/new}"
+           th:attr="hx-get=@{/ui/topics/new}" hx-target="#new-topic" hx-swap="innerHTML">New topic</a>
+    </div>
+    <div id="new-topic"></div>
+    <div id="topics" th:fragment="list">
+        <table>
+            <thead><tr><th>Title</th><th>Message</th><th>Course</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+            <tr th:each="t : ${page.content}">
+                <td><a th:href="@{/ui/topics/{id}(id=${t.id})}" th:text="${t.title}">Title</a></td>
+                <td th:text="${t.message}">Message</td>
+                <td th:text="${t.course?.name}">Course</td>
+                <td th:text="${#temporals.format(t.creationDate, 'yyyy-MM-dd HH:mm')}">Date</td>
+                <td th:text="${t.status}">Status</td>
+            </tr>
+            <tr th:if="${page.empty}"><td colspan="5" class="muted">No topics found.</td></tr>
+            </tbody>
+        </table>
+        <div class="pager">
+            <a th:if="${page.hasPrevious()}" href="#"
+               th:attr="hx-get=@{/ui/topics(courseName=${courseName ?: ''},page=${page.number - 1})}"
+               hx-target="#topics" hx-swap="outerHTML" hx-push-url="true">Previous</a>
+            <span class="muted" th:text="'Page ' + ${page.number + 1} + ' of ' + ${page.totalPages > 0 ? page.totalPages : 1}">Page 1 of 1</span>
+            <a th:if="${page.hasNext()}" href="#"
+               th:attr="hx-get=@{/ui/topics(courseName=${courseName ?: ''},page=${page.number + 1})}"
+               hx-target="#topics" hx-swap="outerHTML" hx-push-url="true">Next</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>
