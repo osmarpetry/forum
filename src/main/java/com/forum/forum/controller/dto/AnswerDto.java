@@ -15,7 +15,7 @@ public class AnswerDto {
         this.id = answer.getId();
         this.message = answer.getMessage();
         this.creationDate = answer.getCreationDate();
-        this.authorName = answer.getAuthor().getName();
+        this.authorName = answer.getAuthor() == null ? null : answer.getAuthor().getName();
     }
 
     public Long getId() {

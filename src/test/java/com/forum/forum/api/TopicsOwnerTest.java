@@ -123,4 +123,12 @@ class TopicsOwnerTest {
         mvc.perform(get(location)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.authorName").value(author.getName()));
     }
+
+    @Test
+    void detailOfTopicWithoutAuthorIsOk() throws Exception {
+        Topic t = topics.save(new Topic("No author topic", "Created before authors were set", courses.findByName("Spring Boot")));
+        mvc.perform(get("/topics/" + t.getId())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("No author topic"))
+                .andExpect(jsonPath("$.authorName").doesNotExist());
+    }
 }
