@@ -5,6 +5,7 @@ import com.forum.forum.model.User;
 import com.forum.forum.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.nio.charset.StandardCharsets;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class SignupController {
+
+    private static final int MAX_PASSWORD_BYTES = 72;
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -35,6 +38,10 @@ public class SignupController {
                          HttpServletResponse response) {
         if (!errors.hasFieldErrors("email") && userRepository.findByEmail(form.getEmail()).isPresent()) {
             errors.rejectValue("email", "email.taken", "Email is already registered");
+        }
+        if (!errors.hasFieldErrors("password")
+                && form.getPassword().getBytes(StandardCharsets.UTF_8).length > MAX_PASSWORD_BYTES) {
+            errors.rejectValue("password", "password.tooLong", "Password must have at most 72 bytes");
         }
         if (errors.hasErrors()) {
             response.setStatus(422);

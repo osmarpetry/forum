@@ -191,6 +191,17 @@ class UiForumTest {
     }
 
     @Test
+    void signUpWithAPasswordOver72BytesGives422() throws Exception {
+        mvc.perform(post("/ui/signup").with(csrf())
+                        .param("name", "Long Pass").param("email", "long.pass@test.io").param("password", "a".repeat(80)))
+                .andExpect(status().is(422))
+                .andExpect(content().string(containsString("Password must have at most 72 bytes")));
+        mvc.perform(post("/ui/signup").with(csrf())
+                        .param("name", "Long Pass").param("email", "long.pass2@test.io").param("password", "é".repeat(40)))
+                .andExpect(status().is(422));
+    }
+
+    @Test
     void signUpWithBadDataGives422() throws Exception {
         mvc.perform(post("/ui/signup").with(csrf())
                         .param("name", "").param("email", "not-an-email").param("password", "123"))
