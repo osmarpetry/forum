@@ -27,6 +27,16 @@ Just try this link:
 
 ```https://www.getpostman.com/collections/34173361d597c7558426```
 
+## Web UI
+A small server-rendered UI (Thymeleaf + htmx 2.0.11, no npm, no CDN) runs next to the JSON API:
+
+```http://localhost:8080/```
+
+- Everyone can list topics (filter by course name, pages) and read a topic with its answers.
+- Log in at `/ui/login` (seed user `aluno@email.com`) to create, edit and delete topics. The UI uses a session cookie and CSRF; the JSON API still uses the JWT token.
+- A UI write clears the `topicsList` cache, so `GET /topics` shows the change at once.
+- htmx lives in `src/main/resources/static/ui/htmx.min.js`. Templates are in `src/main/resources/templates`.
+
 ## How to access the Swagger
 Just try this link, after started the project:
 
