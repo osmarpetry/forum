@@ -11,8 +11,10 @@
                th:attr="hx-get=@{/ui/topics}" hx-trigger="input changed delay:300ms"
                hx-target="#topics" hx-swap="outerHTML" hx-push-url="true">
         <span class="spacer"></span>
-        <a class="button" sec:authorize="isAuthenticated()" th:href="@{/ui/topics/new}">New topic</a>
+        <a class="button" sec:authorize="isAuthenticated()" th:href="@{/ui/topics/new}"
+           th:attr="hx-get=@{/ui/topics/new}" hx-target="#new-topic" hx-swap="innerHTML">New topic</a>
     </div>
+    <div id="new-topic"></div>
     <div id="topics" th:fragment="list">
         <table>
             <thead><tr><th>Title</th><th>Message</th><th>Course</th><th>Date</th><th>Status</th></tr></thead>

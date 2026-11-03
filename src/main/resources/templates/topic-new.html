@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('New topic')}"></head>
+<body th:attr="hx-headers=${'{&quot;X-CSRF-TOKEN&quot;: &quot;' + _csrf.token + '&quot;}'}">
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <div th:replace="~{topic-form :: form}"></div>
+</main>
+</body>
+</html>
