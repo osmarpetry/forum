@@ -33,7 +33,9 @@ A small server-rendered UI (Thymeleaf + htmx 2.0.11, no npm, no CDN) runs next t
 ```http://localhost:8080/```
 
 - Everyone can list topics (filter by course name, pages) and read a topic with its answers.
-- Log in at `/ui/login` (seed user `aluno@email.com`) to create, edit and delete topics. The UI uses a session cookie and CSRF; the JSON API still uses the JWT token.
+- Sign up at `/ui/signup` (name, email, password of at least 6 characters), then log in at `/ui/login` (seed user `aluno@email.com`) to create topics. The UI uses a session cookie and CSRF; the JSON API still uses the JWT token.
+- Any logged-in user can reply to a topic. The topic author can mark one reply as the solution (the topic becomes `RESOLVED`), and only the author can edit or delete the topic. Deleting a topic deletes its replies.
+- The owner rules apply to the web UI only: the JSON API still lets any logged-in user `PUT` or `DELETE` any topic.
 - A UI write clears the `topicsList` cache, so `GET /topics` shows the change at once.
 - htmx lives in `src/main/resources/static/ui/htmx.min.js`. Templates are in `src/main/resources/templates`.
 
