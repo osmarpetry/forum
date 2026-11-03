@@ -218,6 +218,18 @@ class UiForumTest {
     }
 
     @Test
+    void signUpWithMixedCaseEmailThenLogInWithSameText() throws Exception {
+        mvc.perform(post("/ui/signup").with(csrf())
+                        .param("name", "Mixed Case").param("email", "Mixed.Case@Test.io").param("password", "secret1"))
+                .andExpect(redirectedUrl("/ui/login?registered"));
+
+        mvc.perform(formLogin("/ui/login").user("Mixed.Case@Test.io").password("secret1"))
+                .andExpect(redirectedUrl("/ui/topics"));
+        mvc.perform(formLogin("/ui/login").user("mixed.case@test.io").password("secret1"))
+                .andExpect(redirectedUrl("/ui/topics"));
+    }
+
+    @Test
     void signUpWithAnExistingEmailGives422() throws Exception {
         mvc.perform(post("/ui/signup").with(csrf())
                         .param("name", "Copy Cat").param("email", "aluno@email.com").param("password", "secret1"))
