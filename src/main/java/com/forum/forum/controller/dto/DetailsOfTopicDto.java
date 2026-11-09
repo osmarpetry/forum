@@ -24,7 +24,7 @@ public class DetailsOfTopicDto {
         this.title = topic.getTitle();
         this.message = topic.getMessage();
         this.creationDate = topic.getCreationDate();
-        this.authorName = topic.getAuthor().getName();
+        this.authorName = topic.getAuthor() == null ? null : topic.getAuthor().getName();
         this.status = topic.getStatus();
         this.answers = new ArrayList<>();
         this.answers.addAll(topic.getAnswers().stream().map(AnswerDto::new).collect(Collectors.toList()));

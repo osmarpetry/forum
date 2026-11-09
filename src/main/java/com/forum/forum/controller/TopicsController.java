@@ -5,6 +5,7 @@ import com.forum.forum.controller.dto.TopicDto;
 import com.forum.forum.controller.form.TopicForm;
 import com.forum.forum.controller.form.UpdateTopicForm;
 import com.forum.forum.model.Topic;
+import com.forum.forum.model.User;
 import com.forum.forum.repository.CourseRepository;
 import com.forum.forum.repository.TopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -51,8 +54,10 @@ public class TopicsController {
     @PostMapping
     @Transactional
     @CacheEvict(value = "topicsList", allEntries = true)
-    public ResponseEntity<TopicDto> register(@RequestBody @Valid TopicForm form, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<TopicDto> register(@RequestBody @Valid TopicForm form, UriComponentsBuilder uriBuilder,
+                                             @AuthenticationPrincipal User me) {
         Topic topic = form.convert(courseRepository);
+        topic.setAuthor(me);
         topicRepository.save(topic);
 
         URI uri = uriBuilder.path("/topics/{id}").buildAndExpand(topic.getId()).toUri();
@@ -71,9 +76,13 @@ public class TopicsController {
     @PutMapping("/{id}")
     @Transactional
     @CacheEvict(value = "topicsList", allEntries = true)
-    public ResponseEntity<TopicDto> update(@PathVariable Long id, @RequestBody @Valid UpdateTopicForm form) {
+    public ResponseEntity<TopicDto> update(@PathVariable Long id, @RequestBody @Valid UpdateTopicForm form,
+                                           @AuthenticationPrincipal User me) {
         Optional<Topic> optional = topicRepository.findById(id);
         if(optional.isPresent()) {
+            if(!isAuthor(optional.get(), me)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             Topic topic = form.update(id, topicRepository);
             return ResponseEntity.ok(new TopicDto(topic));
         }
@@ -83,12 +92,19 @@ public class TopicsController {
     @DeleteMapping("/{id}")
     @Transactional
     @CacheEvict(value = "topicsList", allEntries = true)
-    public ResponseEntity<TopicDto> remove(@PathVariable Long id) {
+    public ResponseEntity<TopicDto> remove(@PathVariable Long id, @AuthenticationPrincipal User me) {
         Optional<Topic> optional = topicRepository.findById(id);
         if(optional.isPresent()) {
+            if(!isAuthor(optional.get(), me)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
             topicRepository.deleteById(id);
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private static boolean isAuthor(Topic topic, User me) {
+        return topic.getAuthor() != null && topic.getAuthor().getId().equals(me.getId());
     }
 }

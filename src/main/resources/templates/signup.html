@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{layout :: head('Sign up')}"></head>
+<body>
+<nav th:replace="~{layout :: nav}"></nav>
+<main>
+    <h1>Sign up</h1>
+    <form class="card" th:action="@{/ui/signup}" method="post" th:object="${signupForm}">
+        <label for="name">Name</label>
+        <input id="name" th:field="*{name}" autofocus>
+        <div class="error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">error</div>
+        <label for="email">Email</label>
+        <input id="email" type="email" th:field="*{email}">
+        <div class="error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">error</div>
+        <label for="password">Password (at least 6 characters)</label>
+        <input id="password" type="password" th:field="*{password}">
+        <div class="error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">error</div>
+        <div class="actions"><button type="submit">Create account</button></div>
+    </form>
+    <p class="muted">Already have an account? <a th:href="@{/ui/login}">Log in</a></p>
+</main>
+</body>
+</html>
